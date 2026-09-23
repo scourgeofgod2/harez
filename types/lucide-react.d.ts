@@ -1,0 +1,36 @@
+declare module "lucide-react" {
+  import type { FC, SVGProps } from "react";
+  export type LucideIcon = FC<SVGProps<SVGSVGElement> & { size?: number | string }>;
+  export const MessagesSquare: LucideIcon;
+  export const LogOutIcon: LucideIcon;
+  export const SettingsIcon: LucideIcon;
+  export const ArchiveIcon: LucideIcon;
+  export const Loader2Icon: LucideIcon;
+  export const MoreHorizontalIcon: LucideIcon;
+  export const PencilIcon: LucideIcon;
+  export const PlusIcon: LucideIcon;
+  export const SearchIcon: LucideIcon;
+  export const TrashIcon: LucideIcon;
+  export const ArrowDownIcon: LucideIcon;
+  export const ArrowUpIcon: LucideIcon;
+  export const AudioLinesIcon: LucideIcon;
+  export const CheckIcon: LucideIcon;
+  export const ChevronLeftIcon: LucideIcon;
+  export const ChevronRightIcon: LucideIcon;
+  export const CopyIcon: LucideIcon;
+  export const DownloadIcon: LucideIcon;
+  export const MicIcon: LucideIcon;
+  export const PhoneIcon: LucideIcon;
+  export const RefreshCwIcon: LucideIcon;
+  export const SquareIcon: LucideIcon;
+  export const ThumbsDownIcon: LucideIcon;
+  export const ThumbsUpIcon: LucideIcon;
+  export const BrainIcon: LucideIcon;
+  export const ChevronDownIcon: LucideIcon;
+  export const PaperclipIcon: LucideIcon;
+  export const XIcon: LucideIcon;
+  export const FileIcon: LucideIcon;
+  export const ImageIcon: LucideIcon;
+  const fallback: LucideIcon;
+  export default fallback;
+}
