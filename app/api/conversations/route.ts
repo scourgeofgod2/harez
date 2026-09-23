@@ -1,5 +1,6 @@
 import { getSession } from "@/lib/auth";
 import { ensureSchema, getPool } from "@/lib/db";
+import { toConversationUuid } from "@/lib/uuid";
 
 export async function GET() {
   const user = await getSession();
@@ -29,11 +30,12 @@ export async function POST(req: Request) {
   const user = await getSession();
   if (!user) return Response.json({ error: "Giriş gerekli" }, { status: 401 });
 
-  const { remoteId } = (await req.json()) as { remoteId?: string };
-  if (!remoteId) {
-    return Response.json({ error: "remoteId gerekli" }, { status: 400 });
+  const { localId } = (await req.json()) as { localId?: string };
+  if (!localId) {
+    return Response.json({ error: "localId gerekli" }, { status: 400 });
   }
 
+  const remoteId = toConversationUuid(localId);
   await ensureSchema();
   await getPool().query(
     `INSERT INTO public.conversations (id, user_id, title, model_id)

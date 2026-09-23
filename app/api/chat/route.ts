@@ -9,7 +9,8 @@ import {
 } from "ai";
 import { z } from "zod";
 import { getSession } from "@/lib/auth";
-import { ensureSchema, getPool, toConversationUuid } from "@/lib/db";
+import { ensureSchema, getPool } from "@/lib/db";
+import { toConversationUuid } from "@/lib/uuid";
 import { getEndpoint, listEndpoints } from "@/lib/endpoints";
 
 export const maxDuration = 60;

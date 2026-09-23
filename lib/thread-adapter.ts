@@ -8,7 +8,7 @@ import type {
   RemoteThreadListResponse,
   ThreadHistoryAdapter,
 } from "@assistant-ui/core";
-import { toConversationUuid } from "@/lib/db";
+
 
 const emptyStream = () =>
   new ReadableStream({
@@ -88,13 +88,13 @@ export const dbThreadListAdapter: RemoteThreadListAdapter = {
   },
 
   async initialize(localId: string) {
-    const remoteId = toConversationUuid(localId);
-    await fetch("/api/conversations", {
+    const res = await fetch("/api/conversations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ remoteId }),
+      body: JSON.stringify({ localId }),
     });
-    return { remoteId };
+    const data = (await res.json()) as { remoteId: string };
+    return { remoteId: data.remoteId };
   },
 
   async rename(remoteId, newTitle) {
