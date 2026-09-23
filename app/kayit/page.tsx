@@ -4,7 +4,7 @@ import { AuthForm } from "../../components/auth-form";
 export default function KayitPage() {
   return (
     <main className="flex min-h-dvh items-center justify-center bg-muted/40 px-4">
-      <div className="w-full max-w-sm rounded-2xl border bg-background p-6 shadow-sm">
+      <div className="w-full max-w-sm rounded-xl border bg-background p-6 shadow-sm">
         <p className="text-xs font-medium tracking-[0.2em] text-muted-foreground uppercase">
           harez.io
         </p>

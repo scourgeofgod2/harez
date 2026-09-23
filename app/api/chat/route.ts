@@ -9,7 +9,7 @@ import {
 } from "ai";
 import { z } from "zod";
 import { getSession } from "@/lib/auth";
-import { ensureSchema, getPool } from "@/lib/db";
+import { ensureSchema, getPool, toConversationUuid } from "@/lib/db";
 import { getEndpoint, listEndpoints } from "@/lib/endpoints";
 
 export const maxDuration = 60;
@@ -119,6 +119,7 @@ export async function POST(req: Request) {
       try {
         await ensureSchema();
         const pool = getPool();
+        const conversationId = toConversationUuid(id);
         const lastUser = [...messages].reverse().find((m) => m.role === "user");
         const title =
           textOf(lastUser ?? messages[0]!).slice(0, 80) || "Yeni sohbet";
@@ -127,7 +128,7 @@ export async function POST(req: Request) {
           `INSERT INTO public.conversations (id, user_id, title, model_id)
            VALUES ($1, $2, $3, $4)
            ON CONFLICT (id) DO UPDATE SET updated_at = now(), model_id = $4, user_id = $2`,
-          [id, user.id, title, selected.id],
+          [conversationId, user.id, title, selected.id],
         );
 
         if (lastUser) {
@@ -139,14 +140,14 @@ export async function POST(req: Request) {
                SELECT 1 FROM public.messages
                WHERE conversation_id = $1 AND role = 'user' AND content = $2
              )`,
-            [id, content],
+            [conversationId, content],
           );
         }
 
         if (text) {
           await pool.query(
             `INSERT INTO public.messages (conversation_id, role, content) VALUES ($1, 'assistant', $2)`,
-            [id, text],
+            [conversationId, text],
           );
         }
 
@@ -156,7 +157,14 @@ export async function POST(req: Request) {
           `INSERT INTO public.token_usage
              (user_id, conversation_id, model_id, prompt_tokens, completion_tokens, total_tokens)
            VALUES ($1, $2, $3, $4, $5, $6)`,
-          [user.id, id, selected.id, prompt, completion, prompt + completion],
+          [
+            user.id,
+            conversationId,
+            selected.id,
+            prompt,
+            completion,
+            prompt + completion,
+          ],
         );
       } catch (error) {
         console.error("kayıt başarısız", error);

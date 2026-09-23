@@ -38,6 +38,7 @@ export default function AdminPage() {
   const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
   const [users, setUsers] = useState<UsageUser[]>([]);
   const [form, setForm] = useState(empty);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
   async function load() {
@@ -71,6 +72,35 @@ export default function AdminPage() {
       return;
     }
     setForm(empty);
+    setEditingId(null);
+    await load();
+  }
+
+  function startEdit(endpoint: Endpoint) {
+    setForm({
+      id: endpoint.id,
+      label: endpoint.label,
+      baseUrl: endpoint.baseUrl,
+      model: endpoint.model,
+      kind: endpoint.kind,
+      apiKey: "",
+    });
+    setEditingId(endpoint.id);
+  }
+
+  function cancelEdit() {
+    setForm(empty);
+    setEditingId(null);
+  }
+
+  async function remove(endpoint: Endpoint) {
+    if (!confirm(`"${endpoint.label}" silinsin mi?`)) return;
+    await fetch("/api/admin/endpoints", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: endpoint.id }),
+    });
+    if (editingId === endpoint.id) cancelEdit();
     await load();
   }
 
@@ -90,18 +120,23 @@ export default function AdminPage() {
     await load();
   }
 
+  const chatEndpoints = endpoints.filter((e) => e.kind === "chat");
+  const imageEndpoints = endpoints.filter((e) => e.kind === "image");
+
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-5xl flex-col gap-8 px-4 py-8">
+    <main className="mx-auto flex min-h-dvh w-full max-w-5xl flex-col gap-6 px-4 py-8">
       <header className="flex items-center justify-between">
         <div>
-          <p className="text-xs tracking-[0.2em] text-muted-foreground uppercase">
+          <p className="text-[0.6875rem] tracking-[0.2em] text-muted-foreground uppercase">
             harez.io
           </p>
-          <h1 className="text-2xl font-semibold tracking-tight">Yönetim</h1>
+          <h1 className="mt-0.5 text-xl font-semibold tracking-tight">
+            Yönetim
+          </h1>
         </div>
         <Link
           href="/"
-          className="inline-flex h-8 items-center rounded-lg border px-2.5 text-sm"
+          className="inline-flex h-7 items-center rounded-md border px-2.5 text-[0.8125rem] transition-colors hover:bg-muted/60"
         >
           Sohbete dön
         </Link>
@@ -109,13 +144,16 @@ export default function AdminPage() {
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      <section className="rounded-2xl border bg-background p-4">
-        <h2 className="mb-3 text-sm font-medium">Endpoint ekle veya güncelle</h2>
+      <section className="rounded-xl border bg-background p-4">
+        <h2 className="mb-3 text-[0.8125rem] font-medium">
+          {editingId ? "Endpoint güncelle" : "Endpoint ekle"}
+        </h2>
         <form onSubmit={save} className="grid gap-2 md:grid-cols-3">
           <Input
             required
             placeholder="kimlik (grok)"
             value={form.id}
+            disabled={!!editingId}
             onChange={(event) => setForm({ ...form, id: event.target.value })}
           />
           <Input
@@ -142,7 +180,7 @@ export default function AdminPage() {
             onChange={(event) => setForm({ ...form, apiKey: event.target.value })}
           />
           <select
-            className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm"
+            className="h-8 rounded-md border border-input bg-transparent px-2 text-[0.8125rem]"
             value={form.kind}
             onChange={(event) =>
               setForm({ ...form, kind: event.target.value as "chat" | "image" })
@@ -151,35 +189,47 @@ export default function AdminPage() {
             <option value="chat">sohbet</option>
             <option value="image">görsel</option>
           </select>
-          <Button type="submit" className="md:col-span-3">
-            Kaydet
-          </Button>
-        </form>
-        <ul className="mt-4 divide-y text-sm">
-          {endpoints.map((endpoint) => (
-            <li key={endpoint.id} className="flex items-center gap-3 py-2">
-              <div className="min-w-0 flex-1">
-                <p className="font-medium">
-                  {endpoint.label}{" "}
-                  <span className="text-muted-foreground">({endpoint.kind})</span>
-                </p>
-                <p className="truncate text-muted-foreground">
-                  {endpoint.model} · {endpoint.baseUrl} ·{" "}
-                  {endpoint.hasKey ? "anahtar var" : "anahtar yok"}
-                </p>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => toggle(endpoint)}>
-                {endpoint.enabled ? "Açık" : "Kapalı"}
+          <div className="flex gap-2 md:col-span-3">
+            <Button type="submit" className="flex-1">
+              {editingId ? "Güncelle" : "Kaydet"}
+            </Button>
+            {editingId && (
+              <Button type="button" variant="outline" onClick={cancelEdit}>
+                İptal
               </Button>
-            </li>
-          ))}
-        </ul>
+            )}
+          </div>
+        </form>
       </section>
 
-      <section className="rounded-2xl border bg-background p-4">
-        <h2 className="mb-3 text-sm font-medium">Kullanıcı token kullanımı</h2>
+      <section className="rounded-xl border bg-background p-4">
+        <h2 className="mb-3 text-[0.8125rem] font-medium">Sohbet modelleri</h2>
+        <EndpointList
+          endpoints={chatEndpoints}
+          editingId={editingId}
+          onEdit={startEdit}
+          onRemove={remove}
+          onToggle={toggle}
+        />
+      </section>
+
+      <section className="rounded-xl border bg-background p-4">
+        <h2 className="mb-3 text-[0.8125rem] font-medium">Görsel modelleri</h2>
+        <EndpointList
+          endpoints={imageEndpoints}
+          editingId={editingId}
+          onEdit={startEdit}
+          onRemove={remove}
+          onToggle={toggle}
+        />
+      </section>
+
+      <section className="rounded-xl border bg-background p-4">
+        <h2 className="mb-3 text-[0.8125rem] font-medium">
+          Kullanıcı token kullanımı
+        </h2>
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+          <table className="w-full text-left text-[0.8125rem]">
             <thead className="text-muted-foreground">
               <tr>
                 <th className="py-2 font-medium">Kullanıcı</th>
@@ -207,5 +257,75 @@ export default function AdminPage() {
         </div>
       </section>
     </main>
+  );
+}
+
+function EndpointList({
+  endpoints,
+  editingId,
+  onEdit,
+  onRemove,
+  onToggle,
+}: {
+  endpoints: Endpoint[];
+  editingId: string | null;
+  onEdit: (e: Endpoint) => void;
+  onRemove: (e: Endpoint) => void;
+  onToggle: (e: Endpoint) => void;
+}) {
+  if (endpoints.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">Kayıt yok</p>
+    );
+  }
+  return (
+    <ul className="divide-y text-[0.8125rem]">
+      {endpoints.map((endpoint) => (
+        <li
+          key={endpoint.id}
+          className={`flex items-center gap-3 py-2 ${!endpoint.enabled ? "opacity-50" : ""}`}
+        >
+          <div className="min-w-0 flex-1">
+            <p className="flex items-center gap-2 font-medium">
+              {endpoint.label}
+              <span
+                className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[0.625rem] font-medium ${
+                  endpoint.kind === "image"
+                    ? "bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300"
+                    : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                }`}
+              >
+                {endpoint.kind === "image" ? "görsel" : "sohbet"}
+              </span>
+            </p>
+            <p className="truncate text-muted-foreground">
+              {endpoint.model} · {endpoint.baseUrl} ·{" "}
+              {endpoint.hasKey ? "anahtar var" : "anahtar yok"}
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onToggle(endpoint)}
+          >
+            {endpoint.enabled ? "Açık" : "Kapalı"}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onEdit(endpoint)}
+          >
+            Düzenle
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => onRemove(endpoint)}
+          >
+            Sil
+          </Button>
+        </li>
+      ))}
+    </ul>
   );
 }

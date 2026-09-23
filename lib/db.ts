@@ -1,4 +1,14 @@
+import { createHash } from "crypto";
 import { Pool } from "pg";
+
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function toConversationUuid(id: string): string {
+  if (UUID_RE.test(id)) return id.toLowerCase();
+  const hex = createHash("md5").update(id).digest("hex");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`;
+}
 
 const globalForPg = globalThis as unknown as { pgPool?: Pool };
 
@@ -83,6 +93,9 @@ export function ensureSchema() {
       .then(async () => {
         await getPool().query(
           `ALTER TABLE public.conversations ADD COLUMN IF NOT EXISTS user_id uuid REFERENCES public.users(id) ON DELETE CASCADE`,
+        );
+        await getPool().query(
+          `ALTER TABLE public.conversations ADD COLUMN IF NOT EXISTS status text NOT NULL DEFAULT 'regular'`,
         );
       })
       .then(() => undefined)

@@ -88,7 +88,7 @@ export function ThreadListSidebar({
                 <Link
                   href="/admin"
                   aria-label="Yönetim"
-                  className="text-muted-foreground hover:text-foreground"
+                  className="inline-flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
                 >
                   <SettingsIcon className="size-4" />
                 </Link>
@@ -97,7 +97,7 @@ export function ThreadListSidebar({
                 type="button"
                 aria-label="Çıkış"
                 onClick={logout}
-                className="text-muted-foreground hover:text-foreground"
+                className="inline-flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
               >
                 <LogOutIcon className="size-4" />
               </button>

@@ -27,7 +27,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr">
-      <body className={`${inter.variable} ${ibmPlexMono.variable} antialiased`}>
+      <body
+        className={`${inter.variable} ${ibmPlexMono.variable} antialiased`}
+        style={{ fontFeatureSettings: '"cv11"' }}
+      >
         <TooltipProvider>{children}</TooltipProvider>
       </body>
     </html>
