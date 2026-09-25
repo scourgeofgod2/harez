@@ -24,6 +24,7 @@ import {
 } from "@/components/assistant-ui/elements/tool-group.aui";
 import { TooltipIconButton } from "@/components/assistant-ui/elements/tooltip-icon-button";
 import { Button } from "@/components/ui/button";
+import { PromptSuggestion } from "@/components/ui/prompt-suggestion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import {
@@ -191,10 +192,9 @@ const ThreadRoot: FC<{ isEmpty: boolean; autoFocus: boolean }> = ({
     <ThreadPrimitive.Root
       className="aui-root aui-thread-root bg-background @container flex h-full flex-col"
       style={{
-        ["--thread-max-width" as string]: "44rem",
-        ["--composer-bg" as string]:
-          "color-mix(in oklab, var(--color-muted) 30%, transparent)",
-        ["--composer-radius" as string]: "0.75rem",
+        ["--thread-max-width" as string]: "760px",
+        ["--composer-bg" as string]: "#0f1011",
+        ["--composer-radius" as string]: "12px",
         ["--composer-padding" as string]: "8px",
       }}
     >
@@ -205,7 +205,7 @@ const ThreadRoot: FC<{ isEmpty: boolean; autoFocus: boolean }> = ({
       >
         <div
           className={cn(
-            "mx-auto flex w-full max-w-(--thread-max-width) flex-1 flex-col px-4 pt-4",
+            "mx-auto flex w-full max-w-(--thread-max-width) flex-1 flex-col px-6 pt-8",
             isEmpty && "justify-center",
           )}
         >
@@ -227,7 +227,7 @@ const ThreadRoot: FC<{ isEmpty: boolean; autoFocus: boolean }> = ({
 
           <ThreadPrimitive.ViewportFooter
             className={cn(
-              "aui-thread-viewport-footer bg-background flex flex-col gap-4 overflow-visible pb-4 md:pb-6",
+              "aui-thread-viewport-footer flex flex-col gap-4 overflow-visible bg-[#010102] pb-6 md:pb-8",
               !isEmpty &&
                 "sticky bottom-0 mt-auto rounded-t-(--composer-radius)",
             )}
@@ -363,9 +363,9 @@ const ThreadScrollToBottom: FC = () => {
   return (
     <ThreadPrimitive.ScrollToBottom asChild>
       <TooltipIconButton
-        tooltip="Scroll to bottom"
+        tooltip="Aşağı kaydır"
         variant="outline"
-        className="aui-thread-scroll-to-bottom dark:border-border dark:bg-background dark:hover:bg-accent absolute -top-12 z-10 self-center rounded-full p-4 disabled:invisible"
+        className="aui-thread-scroll-to-bottom absolute -top-12 z-10 size-9 self-center rounded-full border border-[#34343a] bg-[#191a1b] p-0 text-[#d0d6e0] disabled:invisible hover:bg-[#23252a]"
       >
         <ArrowDownIcon />
       </TooltipIconButton>
@@ -375,44 +375,38 @@ const ThreadScrollToBottom: FC = () => {
 
 const ThreadWelcome: FC = () => {
   return (
-    <div className="aui-thread-welcome-root mb-6 flex flex-col px-2">
-      <p className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-1 animate-in fill-mode-both text-xl font-medium tracking-tight duration-200">
-        Bugün sana nasıl yardımcı olabilirim?
+    <div className="aui-thread-welcome-root mb-8 flex flex-col items-center px-1 text-center">
+      <span className="mb-5 size-2 rounded-full bg-[#5e6ad2]" />
+      <p className="text-[13px] font-medium tracking-[0.4px] text-[#8a8f98]">
+        HAREZ.IO
+      </p>
+      <p className="mt-3 max-w-xl text-[40px] leading-[1.15] font-semibold tracking-[-1px]">
+        Bugün ne üzerine çalışalım?
+      </p>
+      <p className="mt-3 max-w-md text-sm text-[#8a8f98]">
+        Model seç, sorunuzu yazın. Yanıtlar bu tuvalde kalır.
       </p>
     </div>
   );
 };
 
+const starterPrompts = [
+  "Bu kodu açıkla",
+  "Kısa bir özet çıkar",
+  "Hata ayıkla",
+  "Türkçeye çevir",
+];
+
 const ThreadSuggestions: FC = () => {
   return (
-    <div className="aui-thread-welcome-suggestions flex w-full flex-col">
-      <ThreadPrimitive.Suggestions>
-        {() => <ThreadSuggestionItem />}
-      </ThreadPrimitive.Suggestions>
-    </div>
-  );
-};
-
-const ThreadSuggestionItem: FC = () => {
-  return (
-    <div className="aui-thread-welcome-suggestion-display fade-in slide-in-from-bottom-2 animate-in fill-mode-both duration-200">
-      <SuggestionPrimitive.Trigger send asChild>
-        <button
-          type="button"
-          className="aui-thread-welcome-suggestion group hover:bg-foreground/[0.03] focus-visible:ring-ring/50 flex w-full items-baseline gap-2.5 rounded-md px-2 py-2 text-start text-sm transition-colors outline-none focus-visible:ring-1 motion-reduce:transition-none"
-        >
-          <span
-            aria-hidden
-            className="text-muted-foreground/60 group-hover:text-foreground font-mono text-xs transition-colors motion-reduce:transition-none"
-          >
-            {">"}
-          </span>
-          <span className="min-w-0 flex-1 truncate">
-            <SuggestionPrimitive.Title className="aui-thread-welcome-suggestion-text-1 text-foreground" />{" "}
-            <SuggestionPrimitive.Description className="aui-thread-welcome-suggestion-text-2 text-muted-foreground empty:hidden" />
-          </span>
-        </button>
-      </SuggestionPrimitive.Trigger>
+    <div className="aui-thread-welcome-suggestions flex flex-wrap justify-center gap-2">
+      {starterPrompts.map((prompt) => (
+        <ThreadPrimitive.Suggestion key={prompt} prompt={prompt} send asChild>
+          <PromptSuggestion className="h-8 border-[#23252a] bg-[#0f1011] px-3 text-[13px] hover:bg-[#141516]">
+            {prompt}
+          </PromptSuggestion>
+        </ThreadPrimitive.Suggestion>
+      ))}
     </div>
   );
 };
@@ -423,16 +417,16 @@ const Composer: FC<{ autoFocus: boolean }> = ({ autoFocus }) => {
       <ComposerPrimitive.AttachmentDropzone asChild>
         <div
           data-slot="aui_composer-shell"
-          className="border-foreground/10 focus-within:border-foreground/25 data-[dragging=true]:border-ring flex w-full cursor-text flex-col gap-2 rounded-(--composer-radius) border bg-(--composer-bg) p-(--composer-padding) transition-[border-color] data-[dragging=true]:border-dashed data-[dragging=true]:bg-[color-mix(in_oklab,var(--color-accent)_50%,var(--color-background))]"
+          className="flex w-full cursor-text flex-col rounded-[24px] border border-[#34343a] bg-[#141516] p-2 transition-[border-color,box-shadow] focus-within:border-[#5e6ad2] focus-within:ring-[3px] focus-within:ring-[#5e6ad2]/25 data-[dragging=true]:border-dashed"
         >
           <ComposerAttachments />
           <ComposerPrimitive.Input
-            placeholder="Bir mesaj yaz..."
-            className="aui-composer-input caret-primary placeholder:text-muted-foreground/60 max-h-48 min-h-10 w-full resize-none bg-transparent px-2.5 py-1 text-[0.9375rem] leading-6 outline-none"
+            placeholder="Herhangi bir şey sor veya ara. Dosya etiketlemek için @ kullan."
+            className="aui-composer-input caret-primary placeholder:text-[#62666d] max-h-48 min-h-11 w-full resize-none bg-transparent px-3 pt-2 text-base leading-[1.3] outline-none"
             rows={1}
             autoFocus={autoFocus}
             enterKeyHint="send"
-            aria-label="Message input"
+            aria-label="Mesaj girişi"
           />
           <ComposerAction />
         </div>
@@ -450,7 +444,7 @@ const ComposerAction: FC = () => {
   );
 
   return (
-    <div className="aui-composer-action-wrapper relative flex items-center justify-between">
+    <div className="aui-composer-action-wrapper relative mt-2 flex items-center justify-between px-1 pb-1">
       <ComposerAddAttachment />
       <div className="flex items-center gap-1.5">
         <AuiIf condition={(s) => s.thread.capabilities.dictation}>
@@ -462,8 +456,8 @@ const ComposerAction: FC = () => {
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="aui-composer-dictate text-muted-foreground hover:text-foreground size-7 rounded-full"
-                aria-label="Start voice input"
+                className="aui-composer-dictate text-muted-foreground hover:text-foreground size-7 rounded-md"
+                aria-label="Sesli giriş başlat"
               >
                 <MicIcon className="aui-composer-dictate-icon size-4" />
               </TooltipIconButton>
@@ -477,8 +471,8 @@ const ComposerAction: FC = () => {
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="aui-composer-stop-dictation text-destructive size-7 rounded-full"
-                aria-label="Stop voice input"
+                className="aui-composer-stop-dictation text-destructive size-7 rounded-md"
+                aria-label="Sesli girişi durdur"
               >
                 <SquareIcon className="aui-composer-stop-dictation-icon size-3.5 animate-pulse fill-current" />
               </TooltipIconButton>
@@ -499,8 +493,8 @@ const ComposerAction: FC = () => {
               type="button"
               variant="default"
               size="icon"
-              className="aui-composer-send size-7 rounded-full"
-              aria-label="Send message"
+              className="aui-composer-send size-9 rounded-full"
+              aria-label="Mesaj gönder"
             >
               <ArrowUpIcon className="aui-composer-send-icon size-4" />
             </TooltipIconButton>
@@ -518,8 +512,8 @@ const ComposerAction: FC = () => {
               type="button"
               variant="default"
               size="icon"
-              className="aui-composer-cancel size-7 rounded-full"
-              aria-label={isSending ? "Cancel sending" : "Stop generating"}
+              className="aui-composer-cancel size-9 rounded-full"
+              aria-label={isSending ? "Göndermeyi iptal et" : "Üretimi durdur"}
             >
               <SquareIcon className="aui-composer-cancel-icon size-3.5 fill-current" />
             </Button>
@@ -533,7 +527,7 @@ const ComposerAction: FC = () => {
 const MessageError: FC = () => {
   return (
     <MessagePrimitive.Error>
-      <ErrorPrimitive.Root className="aui-message-error-root border-destructive bg-destructive/10 text-destructive dark:bg-destructive/5 mt-2 rounded-md border p-3 text-sm dark:text-red-200">
+      <ErrorPrimitive.Root className="aui-message-error-root border-destructive bg-[var(--danger-light)] text-destructive mt-2 rounded-md border p-3 text-sm">
         <ErrorPrimitive.Message className="aui-message-error-message line-clamp-2" />
       </ErrorPrimitive.Root>
     </MessagePrimitive.Error>
@@ -655,10 +649,10 @@ const AssistantActionBar: FC = () => {
     <ActionBarPrimitive.Root
       hideWhenRunning
       autohide="not-last"
-      className="aui-assistant-action-bar-root text-muted-foreground animate-in fade-in col-start-3 row-start-2 -ms-1 flex gap-1 duration-200"
+      className="aui-assistant-action-bar-root text-[#8a8f98] animate-in fade-in col-start-3 row-start-2 -ms-1 flex gap-0.5 duration-200"
     >
       <ActionBarPrimitive.Copy asChild>
-        <TooltipIconButton tooltip="Copy">
+        <TooltipIconButton tooltip="Kopyala">
           <AuiIf condition={(s) => s.message.isCopied}>
             <CheckIcon className="animate-in zoom-in-50 fade-in duration-200 ease-out" />
           </AuiIf>
@@ -670,31 +664,31 @@ const AssistantActionBar: FC = () => {
       <AuiIf condition={(s) => s.thread.capabilities.feedback}>
         <ActionBarPrimitive.FeedbackPositive asChild>
           <TooltipIconButton
-            tooltip="Helpful"
-            className="data-[submitted=true]:bg-accent data-[submitted=true]:text-accent-foreground"
+            tooltip="Faydalı"
+            className="data-[submitted=true]:bg-[var(--accent-light)] data-[submitted=true]:text-primary"
           >
             <ThumbsUpIcon />
           </TooltipIconButton>
         </ActionBarPrimitive.FeedbackPositive>
         <ActionBarPrimitive.FeedbackNegative asChild>
           <TooltipIconButton
-            tooltip="Not helpful"
-            className="data-[submitted=true]:bg-accent data-[submitted=true]:text-accent-foreground"
+            tooltip="Faydalı değil"
+            className="data-[submitted=true]:bg-[var(--accent-light)] data-[submitted=true]:text-primary"
           >
             <ThumbsDownIcon />
           </TooltipIconButton>
         </ActionBarPrimitive.FeedbackNegative>
       </AuiIf>
       <ActionBarPrimitive.Reload asChild>
-        <TooltipIconButton tooltip="Refresh">
+        <TooltipIconButton tooltip="Yenile">
           <RefreshCwIcon />
         </TooltipIconButton>
       </ActionBarPrimitive.Reload>
       <ActionBarMorePrimitive.Root>
         <ActionBarMorePrimitive.Trigger asChild>
           <TooltipIconButton
-            tooltip="More"
-            className="data-[state=open]:bg-accent"
+            tooltip="Daha fazla"
+            className="data-[state=open]:bg-muted"
           >
             <MoreHorizontalIcon />
           </TooltipIconButton>
@@ -703,12 +697,12 @@ const AssistantActionBar: FC = () => {
           side="bottom"
           align="start"
           sideOffset={6}
-          className="aui-action-bar-more-content bg-popover text-popover-foreground data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=closed]:animate-out data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 min-w-[8rem] overflow-hidden rounded-xl border p-1.5"
+          className="aui-action-bar-more-content bg-popover text-popover-foreground z-50 min-w-[8rem] overflow-hidden rounded-md border p-1 shadow-xs"
         >
           <ActionBarPrimitive.ExportMarkdown asChild>
-            <ActionBarMorePrimitive.Item className="aui-action-bar-more-item hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm outline-none select-none">
+            <ActionBarMorePrimitive.Item className="aui-action-bar-more-item hover:bg-muted focus:bg-muted flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-[13px] outline-none select-none">
               <DownloadIcon className="size-4" />
-              Export as Markdown
+              Markdown olarak dışa aktar
             </ActionBarMorePrimitive.Item>
           </ActionBarPrimitive.ExportMarkdown>
         </ActionBarMorePrimitive.Content>
@@ -739,7 +733,7 @@ const UserMessage: FC = () => {
       <UserMessageAttachments />
 
       <div className="aui-user-message-content-wrapper relative col-start-2 min-w-0">
-        <div className="aui-user-message-content peer bg-muted text-foreground rounded-(--composer-radius) px-4 py-2 wrap-break-word empty:hidden">
+        <div className="aui-user-message-content peer rounded-3xl bg-[#191a1b] px-4 py-2.5 text-sm wrap-break-word empty:hidden">
           <MessagePrimitive.Parts
             components={{ File: UserFilePart, Image: UserImagePart }}
           />
@@ -765,7 +759,7 @@ const UserActionBar: FC = () => {
       className="aui-user-action-bar-root flex flex-col items-end"
     >
       <ActionBarPrimitive.Edit asChild>
-        <TooltipIconButton tooltip="Edit" className="aui-user-action-edit">
+        <TooltipIconButton tooltip="Düzenle" className="aui-user-action-edit">
           <PencilIcon />
         </TooltipIconButton>
       </ActionBarPrimitive.Edit>
@@ -779,7 +773,7 @@ const EditComposer: FC = () => {
       data-slot="aui_edit-composer-wrapper"
       className="flex flex-col px-2 [contain-intrinsic-size:auto_200px] [content-visibility:auto]"
     >
-      <ComposerPrimitive.Root className="aui-edit-composer-root border-foreground/10 focus-within:border-foreground/25 ms-auto flex w-full max-w-[85%] cursor-text flex-col rounded-(--composer-radius) border bg-(--composer-bg) transition-[border-color]">
+      <ComposerPrimitive.Root className="aui-edit-composer-root ms-auto flex w-full max-w-[85%] cursor-text flex-col rounded-lg border border-[#23252a] bg-[#0f1011] transition-[border-color,box-shadow] focus-within:border-[#5e6ad2] focus-within:ring-[3px] focus-within:ring-[#5e6ad2]/25">
         <ComposerPrimitive.Input
           className="aui-edit-composer-input text-foreground min-h-14 w-full resize-none bg-transparent px-4 pt-3 pb-1 text-base outline-none"
           autoFocus
@@ -787,12 +781,12 @@ const EditComposer: FC = () => {
         <div className="aui-edit-composer-footer mx-2.5 mb-2.5 flex items-center gap-1.5 self-end">
           <ComposerPrimitive.Cancel asChild>
             <Button variant="ghost" size="sm" className="h-8 px-3">
-              Cancel
+              İptal
             </Button>
           </ComposerPrimitive.Cancel>
           <ComposerPrimitive.Send asChild>
             <Button size="sm" className="h-8 px-3">
-              Update
+              Güncelle
             </Button>
           </ComposerPrimitive.Send>
         </div>
@@ -815,7 +809,7 @@ const BranchPicker: FC<BranchPickerPrimitive.Root.Props> = ({
       {...rest}
     >
       <BranchPickerPrimitive.Previous asChild>
-        <TooltipIconButton tooltip="Previous">
+        <TooltipIconButton tooltip="Önceki">
           <ChevronLeftIcon />
         </TooltipIconButton>
       </BranchPickerPrimitive.Previous>
@@ -823,7 +817,7 @@ const BranchPicker: FC<BranchPickerPrimitive.Root.Props> = ({
         <BranchPickerPrimitive.Number /> / <BranchPickerPrimitive.Count />
       </span>
       <BranchPickerPrimitive.Next asChild>
-        <TooltipIconButton tooltip="Next">
+        <TooltipIconButton tooltip="Sonraki">
           <ChevronRightIcon />
         </TooltipIconButton>
       </BranchPickerPrimitive.Next>

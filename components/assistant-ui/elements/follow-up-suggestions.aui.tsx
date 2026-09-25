@@ -52,13 +52,13 @@ const FollowupSuggestionsRow: FC = () => {
         {suggestions.map((suggestion, idx) => (
           <ThreadPrimitive.Suggestion
             key={idx}
-            className="aui-thread-followup-suggestion border-foreground/10 hover:bg-foreground/[0.03] hover:border-foreground/25 rounded-md border px-2.5 py-1 text-sm whitespace-nowrap transition-colors ease-in motion-reduce:transition-none"
+            className="aui-thread-followup-suggestion h-8 rounded-full border border-[#34343a] bg-[#0f1011] px-3 text-[13px] whitespace-nowrap text-[#d0d6e0] transition-colors hover:bg-[#191a1b] motion-reduce:transition-none"
             prompt={suggestion.prompt}
             send
           >
             {suggestion.title ?? suggestion.prompt}
             {suggestion.label && (
-              <span className="aui-thread-followup-suggestion-label text-muted-foreground ms-1">
+              <span className="aui-thread-followup-suggestion-label text-muted-foreground ms-1 text-[11px]">
                 {suggestion.label}
               </span>
             )}

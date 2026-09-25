@@ -1,0 +1,759 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPv4 Subnet Hesaplayıcı</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:           #f8fafc;
+            --surface:      #ffffff;
+            --surface2:     #f1f5f9;
+            --border:       #e2e8f0;
+            --border-hover: #cbd5e1;
+            --text:         #0f172a;
+            --text-muted:   #64748b;
+            --text-light:   #94a3b8;
+            --primary:      #0f172a;
+            --accent:       #3b82f6;
+            --accent-light: #eff6ff;
+            --accent-border:#bfdbfe;
+            --danger:       #ef4444;
+            --danger-light: #fef2f2;
+            --radius:       8px;
+            --radius-lg:    12px;
+            --shadow-sm:    0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md:    0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+            --sidebar-w:    320px;
+            --header-h:     56px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            font-size: 14px;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
+        }
+
+        /* TOPBAR */
+        .topbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: var(--header-h);
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .topbar__left { display: flex; align-items: center; gap: 10px; }
+
+        .topbar__brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text);
+            text-decoration: none;
+        }
+
+        .brand-icon {
+            width: 28px;
+            height: 28px;
+            background: var(--primary);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-toggle {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            border-radius: var(--radius);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 13px;
+            transition: all 0.15s;
+        }
+        .sidebar-toggle:hover { background: var(--surface2); color: var(--text); }
+
+        .btn-ghost {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: var(--radius);
+            font-size: 13px;
+            font-family: inherit;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+        .btn-ghost:hover { background: var(--surface2); border-color: var(--border-hover); color: var(--text); }
+
+        /* SIDEBAR */
+        .sidebar {
+            position: fixed;
+            top: var(--header-h);
+            left: 0;
+            width: var(--sidebar-w);
+            height: calc(100vh - var(--header-h));
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 20px;
+            z-index: 100;
+        }
+
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-track { background: transparent; }
+        .sidebar::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 99px; }
+
+        .sidebar-section { margin-bottom: 24px; }
+
+        .sidebar-section__title {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .ref-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .ref-table th {
+            background: var(--surface2);
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 11px;
+            letter-spacing: 0.3px;
+            padding: 6px 8px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        .ref-table td {
+            padding: 5px 8px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-muted);
+            transition: background 0.1s;
+        }
+        .ref-table tr:last-child td { border-bottom: none; }
+        .ref-table tbody tr:hover td { background: var(--surface2); }
+        .ref-table td:first-child { color: var(--accent); font-weight: 600; }
+
+        /* MAIN CONTENT */
+        .main-content {
+            margin-left: var(--sidebar-w);
+            margin-top: var(--header-h);
+            padding: 28px 24px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-width: calc(100% - var(--sidebar-w));
+        }
+
+        /* CARD */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .card-body { padding: 20px; }
+
+        .card-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        /* INPUT */
+        .input-row { display: flex; }
+
+        .ip-input {
+            flex: 1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-right: none;
+            border-radius: var(--radius) 0 0 var(--radius);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            padding: 10px 14px;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            letter-spacing: 0.5px;
+        }
+        .ip-input::placeholder { color: var(--text-light); font-weight: 400; }
+        .ip-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+        .ip-input.error { border-color: var(--danger); box-shadow: 0 0 0 3px var(--danger-light); }
+
+        .btn-calc {
+            background: var(--accent);
+            color: #fff;
+            border: 1px solid var(--accent);
+            border-radius: 0 var(--radius) var(--radius) 0;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 10px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            white-space: nowrap;
+            transition: all 0.15s;
+        }
+        .btn-calc:hover { background: #2563eb; border-color: #2563eb; }
+
+        /* RESULT CARD */
+        .result-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            transition: border-color 0.25s;
+        }
+        .result-card.active { border-color: var(--accent-border); }
+
+        .result-card-header {
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .result-card-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .result-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.1s;
+        }
+        .result-row:last-child { border-bottom: none; }
+        .result-row:hover { background: var(--surface2); }
+
+        .result-row i {
+            color: var(--text-light);
+            width: 16px;
+            text-align: center;
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+
+        .result-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+            min-width: 190px;
+            flex-shrink: 0;
+        }
+
+        .result-value {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-light);
+            font-variant-numeric: tabular-nums;
+        }
+        .result-value.filled { color: var(--text); }
+        .result-value.highlight { color: var(--accent); font-weight: 600; font-size: 14px; }
+        .result-value.highlight.filled { color: var(--accent); }
+
+        /* FOOTER */
+        .footer {
+            margin-left: var(--sidebar-w);
+            border-top: 1px solid var(--border);
+            padding: 12px 24px;
+            background: var(--surface);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .footer-right { color: var(--text-light); }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 99px; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-in { animation: fadeIn 0.2s ease; }
+
+        /* MOBILE */
+        @media (max-width: 900px) {
+            :root { --sidebar-w: 0px; }
+            .sidebar {
+                width: 300px;
+                transform: translateX(-100%);
+                transition: transform 0.25s ease;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+                box-shadow: var(--shadow-md);
+            }
+            .sidebar-toggle { display: flex; }
+            .main-content, .footer { margin-left: 0; max-width: 100%; }
+        }
+
+        @media (max-width: 520px) {
+            .input-row { flex-direction: column; }
+            .ip-input { border-right: 1px solid var(--border); border-bottom: none; border-radius: var(--radius) var(--radius) 0 0; }
+            .btn-calc { border-radius: 0 0 var(--radius) var(--radius); justify-content: center; }
+            .result-label { min-width: 130px; }
+            .main-content { padding: 16px 12px; }
+        }
+    
+                        [data-theme="dark"] * {
+            color: inherit;
+        }
+        [data-theme="dark"] body {
+            background-color: #0f172a !important;
+            color: #e2e8f0 !important;
+        }
+        [data-theme="dark"] div,
+        [data-theme="dark"] section,
+        [data-theme="dark"] article,
+        [data-theme="dark"] aside,
+        [data-theme="dark"] main,
+        [data-theme="dark"] form,
+        [data-theme="dark"] fieldset,
+        [data-theme="dark"] label {
+            background-color: transparent;
+            color: #e2e8f0;
+        }
+        [data-theme="dark"] .card,
+        [data-theme="dark"] .box,
+        [data-theme="dark"] .panel,
+        [data-theme="dark"] .section,
+        [data-theme="dark"] .block,
+        [data-theme="dark"] .output-section,
+        [data-theme="dark"] .config-section,
+        [data-theme="dark"] .result-section,
+        [data-theme="dark"] .form-section,
+        [data-theme="dark"] .input-group,
+        [data-theme="dark"] .param-section,
+        [data-theme="dark"] .container,
+        [data-theme="dark"] .content,
+        [data-theme="dark"] .wrapper,
+        [data-theme="dark"] .inner {
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+            color: #e2e8f0 !important;
+        }
+        [data-theme="dark"] input[type="text"],
+        [data-theme="dark"] input[type="number"],
+        [data-theme="dark"] input[type="search"],
+        [data-theme="dark"] input[type="email"],
+        [data-theme="dark"] input[type="password"],
+        [data-theme="dark"] input[type="url"],
+        [data-theme="dark"] input,
+        [data-theme="dark"] textarea,
+        [data-theme="dark"] select {
+            background-color: #0f172a !important;
+            color: #e2e8f0 !important;
+            border-color: #334155 !important;
+        }
+        [data-theme="dark"] input::placeholder,
+        [data-theme="dark"] textarea::placeholder {
+            color: #64748b !important;
+        }
+        [data-theme="dark"] input[type="checkbox"],
+        [data-theme="dark"] input[type="radio"] {
+            accent-color: #3b82f6;
+        }
+        [data-theme="dark"] label {
+            color: #cbd5e1 !important;
+        }
+        [data-theme="dark"] button:not(.dark-toggle) {
+            background-color: #1e293b !important;
+            color: #e2e8f0 !important;
+            border-color: #334155 !important;
+        }
+        [data-theme="dark"] button.btn-primary,
+        [data-theme="dark"] button[class*="primary"],
+        [data-theme="dark"] .btn-primary,
+        [data-theme="dark"] button[type="submit"] {
+            background-color: #3b82f6 !important;
+            color: #fff !important;
+            border-color: #2563eb !important;
+        }
+        [data-theme="dark"] pre,
+        [data-theme="dark"] code,
+        [data-theme="dark"] .output,
+        [data-theme="dark"] .config-output,
+        [data-theme="dark"] [class*="output"],
+        [data-theme="dark"] [class*="result"],
+        [data-theme="dark"] [class*="config"],
+        [data-theme="dark"] [class*="code"] {
+            background-color: #0d1520 !important;
+            color: #7dd3fc !important;
+            border-color: #334155 !important;
+        }
+        [data-theme="dark"] table {
+            background-color: #1e293b !important;
+        }
+        [data-theme="dark"] th {
+            background-color: #334155 !important;
+            color: #f1f5f9 !important;
+            border-color: #475569 !important;
+        }
+        [data-theme="dark"] td {
+            color: #e2e8f0 !important;
+            border-color: #334155 !important;
+        }
+        [data-theme="dark"] tr:nth-child(even) td {
+            background-color: #243447 !important;
+        }
+        [data-theme="dark"] a {
+            color: #60a5fa !important;
+        }
+        [data-theme="dark"] h1,[data-theme="dark"] h2,[data-theme="dark"] h3,
+        [data-theme="dark"] h4,[data-theme="dark"] h5,[data-theme="dark"] h6,
+        [data-theme="dark"] p,[data-theme="dark"] span,[data-theme="dark"] li,
+        [data-theme="dark"] td,[data-theme="dark"] th {
+            color: #e2e8f0;
+        }
+[data-theme="dark"] {
+            --bg:           #0f172a;
+            --surface:      #1e293b;
+            --surface2:     #334155;
+            --border:       #334155;
+            --border-hover: #475569;
+            --text:         #f1f5f9;
+            --text-muted:   #94a3b8;
+            --text-light:   #64748b;
+            --primary:      #f1f5f9;
+            --accent-light: #1e3a5f;
+            --accent-border:#1d4ed8;
+            --shadow-sm:    0 1px 2px rgba(0,0,0,0.3);
+            --shadow-md:    0 4px 6px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .dark-toggle {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 6px;
+            padding: 5px 10px;
+            font-size: 16px;
+            line-height: 1;
+            transition: all 0.2s;
+        }
+        .dark-toggle:hover { border-color: var(--border-hover); color: var(--text); }</style>
+</head>
+<body>
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+        <div class="topbar__left">
+            <button class="sidebar-toggle" id="sidebarToggle" title="Referans tablosu">
+                <i class="fas fa-table"></i>
+            </button>
+            <a href="index.html" class="topbar__brand">
+                <div class="brand-icon"><i class="fas fa-network-wired"></i></div>
+                IPv4 Subnet Hesaplayıcı
+            </a>
+        </div>
+        <button class="dark-toggle" id="darkToggleBtn" onclick="toggleDark()" title="Tema değiştir">🌙</button>
+        <a href="index.html" class="btn-ghost">
+            <i class="fas fa-arrow-left"></i> Ana Sayfa
+        </a>
+    </header>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+
+        <div class="sidebar-section">
+            <div class="sidebar-section__title">CIDR Referansı</div>
+            <table class="ref-table">
+                <thead>
+                    <tr><th>CIDR</th><th>Subnet Mask</th><th>Host</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>/0</td><td>0.0.0.0</td><td>4,294,967,294</td></tr>
+                    <tr><td>/1</td><td>128.0.0.0</td><td>2,147,483,646</td></tr>
+                    <tr><td>/2</td><td>192.0.0.0</td><td>1,073,741,822</td></tr>
+                    <tr><td>/3</td><td>224.0.0.0</td><td>536,870,910</td></tr>
+                    <tr><td>/4</td><td>240.0.0.0</td><td>268,435,454</td></tr>
+                    <tr><td>/5</td><td>248.0.0.0</td><td>134,217,726</td></tr>
+                    <tr><td>/6</td><td>252.0.0.0</td><td>67,108,862</td></tr>
+                    <tr><td>/7</td><td>254.0.0.0</td><td>33,554,430</td></tr>
+                    <tr><td>/8</td><td>255.0.0.0</td><td>16,777,214</td></tr>
+                    <tr><td>/9</td><td>255.128.0.0</td><td>8,388,606</td></tr>
+                    <tr><td>/10</td><td>255.192.0.0</td><td>4,194,302</td></tr>
+                    <tr><td>/11</td><td>255.224.0.0</td><td>2,097,150</td></tr>
+                    <tr><td>/12</td><td>255.240.0.0</td><td>1,048,574</td></tr>
+                    <tr><td>/13</td><td>255.248.0.0</td><td>524,286</td></tr>
+                    <tr><td>/14</td><td>255.252.0.0</td><td>262,142</td></tr>
+                    <tr><td>/15</td><td>255.254.0.0</td><td>131,070</td></tr>
+                    <tr><td>/16</td><td>255.255.0.0</td><td>65,534</td></tr>
+                    <tr><td>/17</td><td>255.255.128.0</td><td>32,766</td></tr>
+                    <tr><td>/18</td><td>255.255.192.0</td><td>16,382</td></tr>
+                    <tr><td>/19</td><td>255.255.224.0</td><td>8,190</td></tr>
+                    <tr><td>/20</td><td>255.255.240.0</td><td>4,094</td></tr>
+                    <tr><td>/21</td><td>255.255.248.0</td><td>2,046</td></tr>
+                    <tr><td>/22</td><td>255.255.252.0</td><td>1,022</td></tr>
+                    <tr><td>/23</td><td>255.255.254.0</td><td>510</td></tr>
+                    <tr><td>/24</td><td>255.255.255.0</td><td>254</td></tr>
+                    <tr><td>/25</td><td>255.255.255.128</td><td>126</td></tr>
+                    <tr><td>/26</td><td>255.255.255.192</td><td>62</td></tr>
+                    <tr><td>/27</td><td>255.255.255.224</td><td>30</td></tr>
+                    <tr><td>/28</td><td>255.255.255.240</td><td>14</td></tr>
+                    <tr><td>/29</td><td>255.255.255.248</td><td>6</td></tr>
+                    <tr><td>/30</td><td>255.255.255.252</td><td>2</td></tr>
+                    <tr><td>/31</td><td>255.255.255.254</td><td>0*</td></tr>
+                    <tr><td>/32</td><td>255.255.255.255</td><td>0*</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section__title">Özel IP Aralıkları</div>
+            <table class="ref-table">
+                <thead>
+                    <tr><th>Kullanım</th><th>IP Aralığı</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Private A</td><td>10.0.0.0/8</td></tr>
+                    <tr><td>Private B</td><td>172.16.0.0/12</td></tr>
+                    <tr><td>Private C</td><td>192.168.0.0/16</td></tr>
+                    <tr><td>Localhost</td><td>127.0.0.0/8</td></tr>
+                    <tr><td>Link-local</td><td>169.254.0.0/16</td></tr>
+                    <tr><td>Multicast</td><td>224.0.0.0/4</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main-content">
+
+        <div class="card">
+            <div class="card-body">
+                <div class="card-label">IP / CIDR gir</div>
+                <div class="input-row">
+                    <input
+                        type="text"
+                        id="ipInput"
+                        class="ip-input"
+                        placeholder="192.168.1.0/24"
+                        autocomplete="off"
+                        spellcheck="false"
+                    />
+                    <button class="btn-calc" onclick="SubnetCalculator.calculate()">
+                        <i class="fas fa-calculator"></i>
+                        Hesapla
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="result-card" id="resultCard">
+            <div class="result-card-header">
+                <i class="fas fa-table" style="color:var(--text-muted);font-size:13px;"></i>
+                <span class="result-card-title">Sonuçlar</span>
+            </div>
+            <div class="result-row">
+                <i class="fas fa-network-wired"></i>
+                <span class="result-label">IP Adresi</span>
+                <span class="result-value" id="r-ip">—</span>
+            </div>
+            <div class="result-row">
+                <i class="fas fa-sitemap"></i>
+                <span class="result-label">Ağ Adresi</span>
+                <span class="result-value" id="r-network">—</span>
+            </div>
+            <div class="result-row">
+                <i class="fas fa-mask"></i>
+                <span class="result-label">Subnet Mask</span>
+                <span class="result-value" id="r-mask">—</span>
+            </div>
+            <div class="result-row">
+                <i class="fas fa-random"></i>
+                <span class="result-label">Wildcard Mask</span>
+                <span class="result-value" id="r-wildcard">—</span>
+            </div>
+            <div class="result-row">
+                <i class="fas fa-exchange-alt"></i>
+                <span class="result-label">Kullanılabilir Aralık</span>
+                <span class="result-value" id="r-range">—</span>
+            </div>
+            <div class="result-row">
+                <i class="fas fa-broadcast-tower"></i>
+                <span class="result-label">Broadcast Adresi</span>
+                <span class="result-value" id="r-broadcast">—</span>
+            </div>
+            <div class="result-row">
+                <i class="fas fa-server"></i>
+                <span class="result-label">Toplam Host</span>
+                <span class="result-value" id="r-total">—</span>
+            </div>
+            <div class="result-row">
+                <i class="fas fa-laptop"></i>
+                <span class="result-label">Kullanılabilir Host</span>
+                <span class="result-value highlight" id="r-usable">—</span>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <span>IPv4 Subnet Hesaplayıcı v2.0</span>
+        <span class="footer-right">Burak İlk tarafından geliştirildi</span>
+    </footer>
+
+    <script>
+        class SubnetCalculator {
+            static calculate() {
+                const raw = document.getElementById('ipInput').value.trim();
+                const el  = document.getElementById('ipInput');
+
+                if (!this.validateInput(raw)) {
+                    el.classList.add('error');
+                    setTimeout(() => el.classList.remove('error'), 2000);
+                    return;
+                }
+
+                const [ip, cidr] = raw.split('/');
+                const ipParts    = ip.split('.').map(Number);
+                const cidrNum    = parseInt(cidr);
+
+                const maskBits  = Array(32).fill(0).map((_, i) => i < cidrNum ? 1 : 0);
+                const maskParts = [];
+                for (let i = 0; i < 32; i += 8) {
+                    maskParts.push(parseInt(maskBits.slice(i, i + 8).join(''), 2));
+                }
+
+                const networkParts   = ipParts.map((p, i) => p & maskParts[i]);
+                const broadcastParts = networkParts.map((p, i) => p | (~maskParts[i] & 255));
+                const firstHost      = [...networkParts]; firstHost[3]++;
+                const lastHost       = [...broadcastParts]; lastHost[3]--;
+                const wildcardParts  = maskParts.map(p => 255 - p);
+                const totalHosts     = Math.pow(2, 32 - cidrNum);
+                const usableHosts    = cidrNum >= 31 ? 0 : totalHosts - 2;
+
+                this.set('r-ip',       `${ip} / ${cidr}`);
+                this.set('r-network',  networkParts.join('.'));
+                this.set('r-mask',     maskParts.join('.'));
+                this.set('r-wildcard', wildcardParts.join('.'));
+                this.set('r-range',    cidrNum >= 31
+                    ? 'Kullanılabilir host yok'
+                    : `${firstHost.join('.')}  →  ${lastHost.join('.')}`);
+                this.set('r-broadcast', broadcastParts.join('.'));
+                this.set('r-total',    totalHosts.toLocaleString('tr-TR'));
+                this.set('r-usable',   usableHosts.toLocaleString('tr-TR'));
+
+                const card = document.getElementById('resultCard');
+                card.classList.add('active', 'animate-in');
+                setTimeout(() => card.classList.remove('animate-in'), 300);
+            }
+
+            static set(id, val) {
+                const el = document.getElementById(id);
+                el.textContent = val;
+                el.classList.add('filled');
+            }
+
+            static validateInput(v) {
+                if (!/^(\d{1,3}\.){3}\d{1,3}\/\d{1,2}$/.test(v)) return false;
+                const [ip, cidr] = v.split('/');
+                const parts = ip.split('.').map(Number);
+                const c = parseInt(cidr);
+                return parts.every(p => p >= 0 && p <= 255) && c >= 0 && c <= 32;
+            }
+        }
+
+        document.getElementById('ipInput').addEventListener('keydown', e => {
+            if (e.key === 'Enter') SubnetCalculator.calculate();
+        });
+
+        document.getElementById('sidebarToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
+
+        document.addEventListener('click', e => {
+            const sidebar = document.getElementById('sidebar');
+            const toggle  = document.getElementById('sidebarToggle');
+            if (sidebar.classList.contains('open') &&
+                !sidebar.contains(e.target) &&
+                !toggle.contains(e.target)) {
+                sidebar.classList.remove('open');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('ipInput').focus();
+        });
+    </script>
+
+    <script>
+        (function(){
+            var t = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+        function toggleDark(){
+            var cur = document.documentElement.getAttribute('data-theme');
+            var next = cur === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+            var btn = document.getElementById('darkToggleBtn');
+            if(btn) btn.textContent = next === 'dark' ? '☀️' : '🌙';
+        }
+        document.addEventListener('DOMContentLoaded', function(){
+            var t = localStorage.getItem('theme') || 'light';
+            var btn = document.getElementById('darkToggleBtn');
+            if(btn) btn.textContent = t === 'dark' ? '☀️' : '🌙';
+        });
+    </script></body>
+</html>

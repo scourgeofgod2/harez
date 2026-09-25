@@ -46,7 +46,6 @@ export function AuthForm({ mode }: { mode: "giris" | "kayit" }) {
           placeholder="Adın"
           value={name}
           onChange={(event) => setName(event.target.value)}
-          className="h-10"
         />
       )}
       <Input
@@ -55,7 +54,6 @@ export function AuthForm({ mode }: { mode: "giris" | "kayit" }) {
         placeholder="E-posta"
         value={email}
         onChange={(event) => setEmail(event.target.value)}
-        className="h-10"
       />
       <Input
         required
@@ -64,10 +62,9 @@ export function AuthForm({ mode }: { mode: "giris" | "kayit" }) {
         placeholder="Şifre"
         value={password}
         onChange={(event) => setPassword(event.target.value)}
-        className="h-10"
       />
       {error && <p className="text-sm text-destructive">{error}</p>}
-      <Button type="submit" disabled={pending} className="h-10">
+      <Button type="submit" disabled={pending}>
         {pending ? "Bekle..." : mode === "giris" ? "Giriş yap" : "Kayıt ol"}
       </Button>
     </form>
